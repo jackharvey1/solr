@@ -14,11 +14,13 @@ const clickState = {
     }
 };
 const circleColour = 0xD0CECE;
+const gravitationalConstant = 0.1;
 let alreadyClicked = false;
 let circle;
 let bodies;
 
 function preload() {
+    game.physics.startSystem(Phaser.Physics.ARCADE);
     bodies = game.add.group();
 }
 
@@ -27,7 +29,26 @@ function create() {
 }
 
 function update() {
-    drawCircle();
+    createBody();
+    bodies.forEach(calculateVelocity, this, true);
+}
+
+function calculateVelocity(influencedBody) {
+    const influencedMass = areaOfCircle(influencedBody.radius);
+    bodies.forEach((influencingBody) => {
+        const influencingMass = areaOfCircle(influencingBody.radius);
+        const distance = pythagorasFromPoints(influencingBody.x, influencingBody.y, influencedBody.x, influencedBody.y);
+        const xDistance = influencingBody.x - influencedBody.x;
+        const yDistance = influencingBody.y - influencedBody.y;
+        const xWeight = xDistance / (xDistance + yDistance);
+        const yWeight = yDistance / (xDistance + yDistance);
+        const force = gravitationalConstant * ((influencedMass * influencingMass) / Math.pow(distance, 2));
+
+        const xNewVelocity = influencedBody.body.velocity.x += force * xWeight;
+        const yNewVelocity = influencedBody.body.velocity.y += force * yWeight;
+
+        influencedBody.body.velocity.setTo(xNewVelocity, yNewVelocity);
+    }, this, true);
 }
 
 function createBody() {
@@ -74,6 +95,8 @@ function deployCircle(posX, posY, radius) {
     circleSprite.addChild(circle);
     circleSprite.radius = radius;
 
+    game.physics.enable(circleSprite, Phaser.Physics.ARCADE);
+
     bodies.add(circleSprite);
 }
 
@@ -83,4 +106,8 @@ function pythagorasFromPoints(fromX, fromY, toX, toY) {
     const xSquared = Math.pow(xDistance, 2);
     const ySquared = Math.pow(yDistance, 2);
     return Math.sqrt(xSquared + ySquared);
+}
+
+function areaOfCircle(radius) {
+    return Math.PI * Math.pow(radius, 2);
 }
