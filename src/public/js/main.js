@@ -17,20 +17,7 @@ function preload() {
 }
 
 function create() {
-    const player = game.add.graphics(0, 0);
-
-    player.beginFill(0xFF0000, 1);
-    player.drawCircle(200, 200, 50);
-    player.endFill();
-
-    // player.clear();
-    console.log(Object.keys(player));
-
-    const playerSprite = game.add.sprite(0, 0);
-
-    playerSprite.addChild(player);
-
-    game.physics.enable(playerSprite, Phaser.Physics.ARCADE);
+    // ...
 }
 
 function update() {
@@ -42,16 +29,23 @@ function drawCircle() {
         if (!alreadyClicked) {
             clickCoordinates.x = game.input.x;
             clickCoordinates.y = game.input.y;
-            circle = new Phaser.Circle(game.input.x, game.input.y, 50);
+
+            circle = game.add.graphics(0, 0);
+            circle.beginFill(0xFFFFFF, 1);
         }
 
         const xDistance = clickCoordinates.x - game.input.x;
         const yDistance = clickCoordinates.y - game.input.y;
-        circle.diameter = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2)) * 2;
-        game.debug.geom(circle, '#FFFFFF');
+        const radius = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
+        circle.drawCircle(clickCoordinates.x, clickCoordinates.y, radius);
 
         alreadyClicked = true;
     } else {
+        if (alreadyClicked) {
+            const playerSprite = game.add.sprite(0, 0);
+            playerSprite.addChild(circle);
+            game.physics.enable(playerSprite, Phaser.Physics.ARCADE);
+        }
         alreadyClicked = false;
     }
 }
