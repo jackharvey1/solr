@@ -17,7 +17,20 @@ function preload() {
 }
 
 function create() {
-    // ...
+    const player = game.add.graphics(0, 0);
+
+    player.beginFill(0xFF0000, 1);
+    player.drawCircle(200, 200, 50);
+    player.endFill();
+
+    // player.clear();
+    console.log(Object.keys(player));
+
+    const playerSprite = game.add.sprite(0, 0);
+
+    playerSprite.addChild(player);
+
+    game.physics.enable(playerSprite, Phaser.Physics.ARCADE);
 }
 
 function update() {
