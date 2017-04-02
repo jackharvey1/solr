@@ -18,13 +18,17 @@ gulp.task('lint', () => {
 });
 
 gulp.task('js', function () {
-    return browserify({ entries: [
-        './public/js/main.js'
-        // './public/js/preload.js',
-        // './public/js/create.js',
-        // './public/js/update.js'
-    ], debug: true })
-        .transform("babelify", { presets: ["es2015"] })
+    return browserify({
+        entries: [
+            './public/js/main.js'
+            // './public/js/preload.js',
+            // './public/js/create.js',
+            // './public/js/update.js'
+        ], debug: true
+    })
+        .transform("babelify", {
+            presets: ["es2015"]
+        })
         .bundle()
         .pipe(source('main.min.js'))
         .pipe(buffer())

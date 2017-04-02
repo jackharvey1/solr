@@ -5,20 +5,21 @@ const game = new Phaser.Game(window.outerWidth, window.outerHeight, Phaser.AUTO,
     preload, create, update
 });
 const clickState = {
-    origX: 0,
-    origY: 0,
+    originalX: 0,
+    originalY: 0,
     newX: 0,
     newY: 0,
     dragDistance: function () {
-        return pythagorasFromPoints(this.origX, this.origY, this.newX, this.newY);
+        return pythagorasFromPoints(this.originalX, this.originalY, this.newX, this.newY);
     }
 };
 const circleColour = 0xD0CECE;
 let alreadyClicked = false;
 let circle;
+let bodies;
 
 function preload() {
-    // ...
+    bodies = game.add.group();
 }
 
 function create() {
@@ -29,37 +30,51 @@ function update() {
     drawCircle();
 }
 
-function drawCircle() {
+function createBody() {
     if (game.input.mousePointer.isDown) {
         if (!alreadyClicked) {
-            clickState.origX = game.input.x;
-            clickState.origY = game.input.y;
+            clickState.originalX = game.input.x;
+            clickState.originalY = game.input.y;
 
             circle = game.add.graphics(0, 0);
             circle.beginFill(circleColour, 1);
         }
 
-        const currentDragDistance = pythagorasFromPoints(clickState.origX, clickState.origY, game.input.x, game.input.y);
-
-        if (currentDragDistance < clickState.dragDistance()) {
-            circle.clear();
-            circle.beginFill(circleColour, 1);
-        }
-
-        clickState.newX = game.input.x;
-        clickState.newY = game.input.y;
-
-        circle.drawCircle(clickState.origX, clickState.origY, currentDragDistance);
+        drawCircle(clickState.originalX, clickState.originalY, game.input.x, game.input.y);
 
         alreadyClicked = true;
     } else {
         if (alreadyClicked) {
-            const playerSprite = game.add.sprite(0, 0);
-            playerSprite.addChild(circle);
-            game.physics.enable(playerSprite, Phaser.Physics.ARCADE);
+            deployCircle(clickState.originalX, clickState.originalY, clickState.dragDistance());
         }
         alreadyClicked = false;
     }
+}
+
+function drawCircle(originX, originY, edgeX, edgeY) {
+    const currentDragDistance = pythagorasFromPoints(originX, originY, edgeX, edgeY);
+
+    if (currentDragDistance < clickState.dragDistance()) {
+        circle.clear();
+        circle.beginFill(circleColour, 1);
+    }
+
+    clickState.newX = game.input.x;
+    clickState.newY = game.input.y;
+
+    circle.drawCircle(clickState.originalX, clickState.originalY, currentDragDistance);
+}
+
+function deployCircle(posX, posY, radius) {
+    circle.clear();
+    circle.beginFill(circleColour, 1);
+    circle.drawCircle(0, 0, radius);
+
+    const circleSprite = game.add.sprite(posX, posY);
+    circleSprite.addChild(circle);
+    circleSprite.radius = radius;
+
+    bodies.add(circleSprite);
 }
 
 function pythagorasFromPoints(fromX, fromY, toX, toY) {
