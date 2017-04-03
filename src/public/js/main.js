@@ -31,6 +31,19 @@ function create() {
 function update() {
     createBody();
     bodies.forEach(calculateVelocity, this, true);
+    bodies.forEach(detectCollision);
+}
+
+function detectCollision(bodyToCheck) {
+    bodies.forEach((otherBody) => {
+        if (bodyToCheck !== otherBody) {
+            const distance = pythagorasFromPoints(bodyToCheck.x, bodyToCheck.y, otherBody.x, otherBody.y);
+            if (distance <= bodyToCheck.radius + otherBody.radius) {
+                const bodyToKill = bodyToCheck.radius < otherBody.radius ? bodyToCheck : otherBody;
+                bodyToKill.kill();
+            }
+        }
+    });
 }
 
 function calculateVelocity(influencedBody) {
@@ -38,7 +51,7 @@ function calculateVelocity(influencedBody) {
     bodies.forEach((influencingBody) => {
         if (influencedBody !== influencingBody) {
             const influencingMass = areaOfCircle(influencingBody.radius);
-            const distance = pythagorasFromPoints(influencingBody.x, influencingBody.y, influencedBody.x, influencedBody.y);
+            const distance = pythagorasFromPoints(influencedBody.x, influencedBody.y, influencingBody.x, influencingBody.y);
             const xDistance = influencingBody.x - influencedBody.x;
             const yDistance = influencingBody.y - influencedBody.y;
             const xWeight = xDistance / Math.abs(xDistance + yDistance);
@@ -111,4 +124,8 @@ function pythagorasFromPoints(fromX, fromY, toX, toY) {
 
 function areaOfCircle(radius) {
     return Math.PI * Math.pow(radius, 2);
+}
+
+function radiusFromArea(area) {
+    return Math.sqrt(area / Math.PI);
 }
