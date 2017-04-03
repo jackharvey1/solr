@@ -20,7 +20,7 @@ let circle;
 let bodies;
 
 function preload() {
-    game.physics.startSystem(Phaser.Physics.ARCADE);
+    game.physics.startSystem(Phaser.Physics.P2JS);
     bodies = game.add.group();
 }
 
@@ -45,10 +45,8 @@ function calculateVelocity(influencedBody) {
             const yWeight = yDistance / Math.abs(xDistance + yDistance);
             const force = gravitationalConstant * ((influencedMass * influencingMass) / Math.pow(distance, 2));
 
-            const xNewVelocity = influencedBody.body.velocity.x += force * xWeight;
-            const yNewVelocity = influencedBody.body.velocity.y += force * yWeight;
-
-            influencedBody.body.velocity.setTo(xNewVelocity, yNewVelocity);
+            influencedBody.body.velocity.x += force * xWeight;
+            influencedBody.body.velocity.y += force * yWeight;
         }
     }, this, true);
 }
@@ -97,7 +95,8 @@ function deployCircle(posX, posY, radius) {
     circleSprite.addChild(circle);
     circleSprite.radius = radius;
 
-    game.physics.enable(circleSprite, Phaser.Physics.ARCADE);
+    game.physics.p2.enable(circleSprite, false);
+    circleSprite.body.setCircle(radius);
 
     bodies.add(circleSprite);
 }
