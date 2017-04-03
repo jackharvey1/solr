@@ -14,7 +14,7 @@ const clickState = {
     }
 };
 const circleColour = 0xD0CECE;
-const gravitationalConstant = 0.1;
+const gravitationalConstant = 0.01;
 let alreadyClicked = false;
 let circle;
 let bodies;
@@ -36,18 +36,20 @@ function update() {
 function calculateVelocity(influencedBody) {
     const influencedMass = areaOfCircle(influencedBody.radius);
     bodies.forEach((influencingBody) => {
-        const influencingMass = areaOfCircle(influencingBody.radius);
-        const distance = pythagorasFromPoints(influencingBody.x, influencingBody.y, influencedBody.x, influencedBody.y);
-        const xDistance = influencingBody.x - influencedBody.x;
-        const yDistance = influencingBody.y - influencedBody.y;
-        const xWeight = xDistance / (xDistance + yDistance);
-        const yWeight = yDistance / (xDistance + yDistance);
-        const force = gravitationalConstant * ((influencedMass * influencingMass) / Math.pow(distance, 2));
+        if (influencedBody !== influencingBody) {
+            const influencingMass = areaOfCircle(influencingBody.radius);
+            const distance = pythagorasFromPoints(influencingBody.x, influencingBody.y, influencedBody.x, influencedBody.y);
+            const xDistance = influencingBody.x - influencedBody.x;
+            const yDistance = influencingBody.y - influencedBody.y;
+            const xWeight = xDistance / Math.abs(xDistance + yDistance);
+            const yWeight = yDistance / Math.abs(xDistance + yDistance);
+            const force = gravitationalConstant * ((influencedMass * influencingMass) / Math.pow(distance, 2));
 
-        const xNewVelocity = influencedBody.body.velocity.x += force * xWeight;
-        const yNewVelocity = influencedBody.body.velocity.y += force * yWeight;
+            const xNewVelocity = influencedBody.body.velocity.x += force * xWeight;
+            const yNewVelocity = influencedBody.body.velocity.y += force * yWeight;
 
-        influencedBody.body.velocity.setTo(xNewVelocity, yNewVelocity);
+            influencedBody.body.velocity.setTo(xNewVelocity, yNewVelocity);
+        }
     }, this, true);
 }
 
