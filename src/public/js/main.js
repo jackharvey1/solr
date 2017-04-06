@@ -1,5 +1,4 @@
 /* global Phaser */
-/* eslint no-unused-vars: off */
 
 const game = new Phaser.Game(window.outerWidth, window.outerHeight, Phaser.AUTO, '', {
     preload, create, update
@@ -30,51 +29,66 @@ function create() {
 
 function update() {
     createBody();
-    bodies.forEach(calculateVelocity, this, true);
-    bodies.forEach(detectCollision);
+    calculateVelocities();
+    detectCollisions();
 }
 
-function detectCollision(bodyToCheck) {
-    bodies.forEach((otherBody) => {
-        if (bodyToCheck !== otherBody) {
-            const distance = pythagorasFromPoints(bodyToCheck.x, bodyToCheck.y, otherBody.x, otherBody.y);
-            if (distance <= bodyToCheck.radius + otherBody.radius) {
-                const bodyToKill = bodyToCheck.radius < otherBody.radius ? bodyToCheck : otherBody;
-                bodyToKill.kill();
+function detectCollisions() {
+    const toCreate = [];
+    const toDestroy = [];
+
+    for (let i = 0, l = bodies.children.length; i < l; i++) {
+        for (let j = i + 1; j < l; j++) {
+            const distance = pythagorasFromPoints(bodies.children[i].x, bodies.children[i].y, bodies.children[j].x, bodies.children[j].y);
+            if (distance <= bodies.children[i].radius + bodies.children[j].radius) {
+                const bodyToLive = bodies.children[i].radius < bodies.children[j].radius ? bodies.children[j] : bodies.children[i];
+                const newRadius = radiusFromArea(areaOfCircle(bodies.children[i].radius) + areaOfCircle(bodies.children[j].radius));
+
+                toCreate.push({
+                    x: bodyToLive.x,
+                    y: bodyToLive.y,
+                    radius: newRadius
+                });
+
+                toDestroy.push(bodies.children[i]);
+                toDestroy.push(bodies.children[j]);
             }
         }
+    }
+
+    toDestroy.forEach((body) => {
+        bodies.remove(body);
+    });
+
+    toCreate.forEach((body) => {
+        circle = game.add.graphics(0, 0);
+        deployCircle(body.x, body.y, body.radius);
     });
 }
 
-function calculateVelocity(influencedBody) {
-    const influencedMass = areaOfCircle(influencedBody.radius);
-    bodies.forEach((influencingBody) => {
-        if (influencedBody !== influencingBody) {
-            const influencingMass = areaOfCircle(influencingBody.radius);
-            const distance = pythagorasFromPoints(influencedBody.x, influencedBody.y, influencingBody.x, influencingBody.y);
-            const xDistance = influencingBody.x - influencedBody.x;
-            const yDistance = influencingBody.y - influencedBody.y;
-            const xWeight = xDistance / Math.abs(xDistance + yDistance);
-            const yWeight = yDistance / Math.abs(xDistance + yDistance);
-            const force = gravitationalConstant * ((influencedMass * influencingMass) / Math.pow(distance, 2));
+function calculateVelocities() {
+    bodies.forEach((influencedBody) => {
+        const massOfInfluenced = areaOfCircle(influencedBody.radius);
+        bodies.forEach((influencingBody) => {
+            if (influencedBody !== influencingBody) {
+                const massOfInfluencer = areaOfCircle(influencingBody.radius);
+                const distance = pythagorasFromPoints(influencedBody.x, influencedBody.y, influencingBody.x, influencingBody.y);
+                const xDistance = influencingBody.x - influencedBody.x;
+                const yDistance = influencingBody.y - influencedBody.y;
+                const xWeight = xDistance / Math.abs(xDistance + yDistance);
+                const yWeight = yDistance / Math.abs(xDistance + yDistance);
+                const force = gravitationalConstant * ((massOfInfluenced * massOfInfluencer) / Math.pow(distance, 2));
 
-            influencedBody.body.velocity.x += force * xWeight;
-            influencedBody.body.velocity.y += force * yWeight;
-        }
-    }, this, true);
+                influencedBody.body.velocity.x += force * xWeight;
+                influencedBody.body.velocity.y += force * yWeight;
+            }
+        }, this, true);
+    });
 }
 
 function createBody() {
     if (game.input.mousePointer.isDown) {
-        if (!alreadyClicked) {
-            clickState.originalX = game.input.x;
-            clickState.originalY = game.input.y;
-
-            circle = game.add.graphics(0, 0);
-            circle.beginFill(circleColour, 1);
-        }
-
-        drawCircle(clickState.originalX, clickState.originalY, game.input.x, game.input.y);
+        drawCircle();
 
         alreadyClicked = true;
     } else {
@@ -85,8 +99,16 @@ function createBody() {
     }
 }
 
-function drawCircle(originX, originY, edgeX, edgeY) {
-    const currentDragDistance = pythagorasFromPoints(originX, originY, edgeX, edgeY);
+function drawCircle() {
+    if (!alreadyClicked) {
+        clickState.originalX = game.input.x;
+        clickState.originalY = game.input.y;
+
+        circle = game.add.graphics(0, 0);
+        circle.beginFill(circleColour, 1);
+    }
+
+    const currentDragDistance = pythagorasFromPoints(clickState.originalX, clickState.originalY, game.input.x, game.input.y);
 
     if (currentDragDistance < clickState.dragDistance()) {
         circle.clear();
