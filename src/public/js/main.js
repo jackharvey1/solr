@@ -1,5 +1,10 @@
 /* global Phaser */
 
+'use strict';
+
+const maths = require('./maths');
+const physics = require('./physics');
+
 const game = new Phaser.Game(window.outerWidth, window.outerHeight, Phaser.AUTO, '', {
     preload, create, update
 });
@@ -9,11 +14,10 @@ const clickState = {
     newX: 0,
     newY: 0,
     dragDistance: function () {
-        return pythagorasFromPoints(this.originalX, this.originalY, this.newX, this.newY);
+        return maths.pythagorasFromPoints(this.originalX, this.originalY, this.newX, this.newY);
     }
 };
 const circleColour = 0xD0CECE;
-const gravitationalConstant = 0.01;
 let alreadyClicked = false;
 let circle;
 let bodies;
@@ -39,10 +43,10 @@ function detectCollisions() {
 
     for (let i = 0, l = bodies.children.length; i < l; i++) {
         for (let j = i + 1; j < l; j++) {
-            const distance = pythagorasFromPoints(bodies.children[i].x, bodies.children[i].y, bodies.children[j].x, bodies.children[j].y);
+            const distance = maths.pythagorasFromPoints(bodies.children[i].x, bodies.children[i].y, bodies.children[j].x, bodies.children[j].y);
             if (distance <= bodies.children[i].radius + bodies.children[j].radius) {
                 const bodyToLive = bodies.children[i].radius < bodies.children[j].radius ? bodies.children[j] : bodies.children[i];
-                const newRadius = radiusFromArea(areaOfCircle(bodies.children[i].radius) + areaOfCircle(bodies.children[j].radius));
+                const newRadius = maths.radiusFromArea(maths.areaOfCircle(bodies.children[i].radius) + maths.areaOfCircle(bodies.children[j].radius));
 
                 toCreate.push({
                     x: bodyToLive.x,
@@ -68,23 +72,22 @@ function detectCollisions() {
 
 function calculateVelocities() {
     bodies.forEach((influencedBody) => {
-        const massOfInfluenced = areaOfCircle(influencedBody.radius);
         bodies.forEach((influencingBody) => {
             if (influencedBody !== influencingBody) {
-                const massOfInfluencer = areaOfCircle(influencingBody.radius);
-                const distance = pythagorasFromPoints(influencedBody.x, influencedBody.y, influencingBody.x, influencingBody.y);
+                const force = physics.calculateForceBetween(influencedBody, influencingBody);
+
                 const xDistance = influencingBody.x - influencedBody.x;
                 const yDistance = influencingBody.y - influencedBody.y;
                 const xWeight = xDistance / Math.abs(xDistance + yDistance);
                 const yWeight = yDistance / Math.abs(xDistance + yDistance);
-                const force = gravitationalConstant * ((massOfInfluenced * massOfInfluencer) / Math.pow(distance, 2));
 
-                influencedBody.body.velocity.x += force * xWeight;
-                influencedBody.body.velocity.y += force * yWeight;
+                influencedBody.body.velocity.x += xWeight * force;
+                influencedBody.body.velocity.y += yWeight * force;
             }
         }, this, true);
     });
 }
+
 
 function createBody() {
     if (game.input.mousePointer.isDown) {
@@ -108,7 +111,7 @@ function drawCircle() {
         circle.beginFill(circleColour, 1);
     }
 
-    const currentDragDistance = pythagorasFromPoints(clickState.originalX, clickState.originalY, game.input.x, game.input.y);
+    const currentDragDistance = maths.pythagorasFromPoints(clickState.originalX, clickState.originalY, game.input.x, game.input.y);
 
     if (currentDragDistance < clickState.dragDistance()) {
         circle.clear();
@@ -134,20 +137,4 @@ function deployCircle(posX, posY, radius) {
     circleSprite.body.setCircle(radius);
 
     bodies.add(circleSprite);
-}
-
-function pythagorasFromPoints(fromX, fromY, toX, toY) {
-    const xDistance = fromX - toX;
-    const yDistance = fromY - toY;
-    const xSquared = Math.pow(xDistance, 2);
-    const ySquared = Math.pow(yDistance, 2);
-    return Math.sqrt(xSquared + ySquared);
-}
-
-function areaOfCircle(radius) {
-    return Math.PI * Math.pow(radius, 2);
-}
-
-function radiusFromArea(area) {
-    return Math.sqrt(area / Math.PI);
 }
