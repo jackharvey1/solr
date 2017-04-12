@@ -1,10 +1,5 @@
 /* global Phaser */
 
-/**
-* Use force in calculateVelocities for more realistic gravitation
-* Divide force by mass and increase gravitational constant to make smaller bodies move towards big bodies faster
-*/
-
 'use strict';
 
 const maths = require('./maths');
@@ -84,9 +79,10 @@ function detectCollisions() {
 
 function calculateVelocities() {
     bodies.forEach((influencedBody) => {
+        const mass = maths.areaOfCircle(influencedBody.radius);
         bodies.forEach((influencingBody) => {
             if (influencedBody !== influencingBody) {
-                const force = physics.calculateForceBetween(influencedBody, influencingBody);
+                const force = physics.calculateForceBetween(influencedBody, influencingBody) / mass;
 
                 const xDistance = influencingBody.x - influencedBody.x;
                 const yDistance = influencingBody.y - influencedBody.y;
