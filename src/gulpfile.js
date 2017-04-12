@@ -24,18 +24,15 @@ gulp.task('js', function () {
             // './public/js/preload.js',
             // './public/js/create.js',
             // './public/js/update.js'
-        ], debug: true
+        ],
+        debug: true
     })
-        .transform("babelify", {
-            presets: ["es2015"]
-        })
+        .transform("babelify", { presets: ["es2015"] })
         .bundle()
         .pipe(source('main.min.js'))
         .pipe(buffer())
         .pipe(sourcemaps.init())
-        .pipe(uglify({
-            mangle: false
-        }))
+        .pipe(uglify({ mangle: false }))
         .on('error', function (err) {
             console.error(err.message);
         })
@@ -45,11 +42,10 @@ gulp.task('js', function () {
 });
 
 gulp.task('server', ['build'], function () {
-    nodemon({
-        script: 'app.js'
-    }).on('restart', function() {
-        console.log('Restarted');
-    });
+    nodemon({ script: 'app.js' })
+        .on('restart', function() {
+            console.log('Restarted');
+        });
 });
 
 gulp.task('watch', ['build'], function() {

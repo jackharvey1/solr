@@ -1,4 +1,6 @@
-main.min.js
+*.swp
+*.min.js
+!phaser.min.js
 maps
 .DS_Store
 node_modules

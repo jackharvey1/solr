@@ -1,12 +1,19 @@
 /* global Phaser */
 
+/**
+* Use force in calculateVelocities for more realistic gravitation
+* Divide force by mass and increase gravitational constant to make smaller bodies move towards big bodies faster
+*/
+
 'use strict';
 
 const maths = require('./maths');
 const physics = require('./physics');
 
 const game = new Phaser.Game(window.outerWidth, window.outerHeight, Phaser.AUTO, '', {
-    preload, create, update
+    preload,
+    create,
+    update
 });
 const clickState = {
     originalX: 0,
@@ -23,7 +30,7 @@ let circle;
 let bodies;
 
 function preload() {
-    game.physics.startSystem(Phaser.Physics.P2JS);
+    game.physics.startSystem(Phaser.Physics.ARCADE);
     bodies = game.add.group();
 }
 
@@ -42,20 +49,25 @@ function detectCollisions() {
     const toDestroy = [];
 
     for (let i = 0, l = bodies.children.length; i < l; i++) {
+        const bodyToCheck = bodies.children[i];
         for (let j = i + 1; j < l; j++) {
-            const distance = maths.pythagorasFromPoints(bodies.children[i].x, bodies.children[i].y, bodies.children[j].x, bodies.children[j].y);
-            if (distance <= bodies.children[i].radius + bodies.children[j].radius) {
-                const bodyToLive = bodies.children[i].radius < bodies.children[j].radius ? bodies.children[j] : bodies.children[i];
-                const newRadius = maths.radiusFromArea(maths.areaOfCircle(bodies.children[i].radius) + maths.areaOfCircle(bodies.children[j].radius));
+            const otherBody = bodies.children[j];
+            const distance = maths.pythagorasFromPoints(bodyToCheck.x, bodyToCheck.y, otherBody.x, otherBody.y);
+            if (distance <= bodyToCheck.radius + otherBody.radius) {
+                const bodyToLive = bodyToCheck.radius < otherBody.radius ? otherBody : bodyToCheck;
+                const newRadius = maths.radiusOfCombinedArea(bodyToCheck.radius, otherBody.radius);
+
+                const newVelocity = physics.calculateResultantVelocity(bodyToCheck, otherBody);
 
                 toCreate.push({
                     x: bodyToLive.x,
                     y: bodyToLive.y,
-                    radius: newRadius
+                    radius: newRadius,
+                    velocity: newVelocity
                 });
 
-                toDestroy.push(bodies.children[i]);
-                toDestroy.push(bodies.children[j]);
+                toDestroy.push(bodyToCheck);
+                toDestroy.push(otherBody);
             }
         }
     }
@@ -66,7 +78,7 @@ function detectCollisions() {
 
     toCreate.forEach((body) => {
         circle = game.add.graphics(0, 0);
-        deployCircle(body.x, body.y, body.radius);
+        deployCircle(body.x, body.y, body.radius, { velocity: body.velocity });
     });
 }
 
@@ -78,16 +90,15 @@ function calculateVelocities() {
 
                 const xDistance = influencingBody.x - influencedBody.x;
                 const yDistance = influencingBody.y - influencedBody.y;
-                const xWeight = xDistance / Math.abs(xDistance + yDistance);
-                const yWeight = yDistance / Math.abs(xDistance + yDistance);
+                const xWeighting = xDistance / Math.abs(xDistance + yDistance);
+                const yWeighting = yDistance / Math.abs(xDistance + yDistance);
 
-                influencedBody.body.velocity.x += xWeight * force;
-                influencedBody.body.velocity.y += yWeight * force;
+                influencedBody.body.velocity.x += xWeighting * force;
+                influencedBody.body.velocity.y += yWeighting * force;
             }
         }, this, true);
-    });
+    }, this, true);
 }
-
 
 function createBody() {
     if (game.input.mousePointer.isDown) {
@@ -124,7 +135,7 @@ function drawCircle() {
     circle.drawCircle(clickState.originalX, clickState.originalY, currentDragDistance);
 }
 
-function deployCircle(posX, posY, radius) {
+function deployCircle(posX, posY, radius, extras) {
     circle.clear();
     circle.beginFill(circleColour, 1);
     circle.drawCircle(0, 0, radius);
@@ -133,8 +144,13 @@ function deployCircle(posX, posY, radius) {
     circleSprite.addChild(circle);
     circleSprite.radius = radius;
 
-    game.physics.p2.enable(circleSprite, false);
-    circleSprite.body.setCircle(radius);
+    game.physics.arcade.enable(circleSprite, false);
+    circleSprite.body.collideWorldBounds = false;
+
+    if (extras) {
+        circleSprite.body.velocity.x = extras.velocity.x;
+        circleSprite.body.velocity.y = extras.velocity.y;
+    }
 
     bodies.add(circleSprite);
 }
