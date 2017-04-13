@@ -120,15 +120,17 @@ function drawCircle() {
 
     const currentDragDistance = maths.pythagorasFromPoints(clickState.originalX, clickState.originalY, game.input.x, game.input.y);
 
-    if (currentDragDistance < clickState.dragDistance()) {
-        circle.clear();
-        circle.beginFill(circleColour, 1);
+    if (currentDragDistance <= 150) {
+        if (currentDragDistance < clickState.dragDistance()) {
+            circle.clear();
+            circle.beginFill(circleColour, 1);
+        }
+        circle.drawCircle(clickState.originalX, clickState.originalY, currentDragDistance);
     }
 
     clickState.newX = game.input.x;
     clickState.newY = game.input.y;
 
-    circle.drawCircle(clickState.originalX, clickState.originalY, currentDragDistance);
 }
 
 function deployCircle(posX, posY, radius, extras) {
