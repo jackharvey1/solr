@@ -130,7 +130,6 @@ function drawCircle() {
 
     clickState.newX = game.input.x;
     clickState.newY = game.input.y;
-
 }
 
 function deployCircle(posX, posY, radius, extras) {
