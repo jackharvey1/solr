@@ -162,10 +162,10 @@ function drawCircle() {
             circle.beginFill(circleColour, 1);
         }
         circle.drawCircle(clickState.originalX, clickState.originalY, currentDragDistance);
-    }
 
-    clickState.newX = game.input.x;
-    clickState.newY = game.input.y;
+        clickState.newX = game.input.x;
+        clickState.newY = game.input.y;
+    }
 }
 
 function deployCircle(posX, posY, radius, extras) {
