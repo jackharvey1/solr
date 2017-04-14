@@ -2,10 +2,18 @@
 
 'use strict';
 
+/**
+* Don't pollute global namespace
+*/
+
 const maths = require('./maths');
 const physics = require('./physics');
 
-const game = new Phaser.Game(window.outerWidth, window.outerHeight, Phaser.AUTO, '', {
+const bounds = {
+    x: window.outerWidth,
+    y: window.outerHeight
+};
+const game = new Phaser.Game(bounds.x, bounds.y, Phaser.AUTO, '', {
     preload,
     create,
     update
@@ -26,7 +34,7 @@ let bodies;
 
 function preload() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
-    bodies = game.add.group();
+    window.bodies = bodies = game.add.group();
 }
 
 function create() {
@@ -34,9 +42,41 @@ function create() {
 }
 
 function update() {
-    createBody();
+    detectOnClick();
     calculateVelocities();
-    detectCollisions();
+    updateSystem();
+}
+
+function updateSystem() {
+    const toChange = detectCollisions();
+    toChange.toDestroy.concat(detectOutOfBounds());
+
+    toChange.toDestroy.forEach((body) => {
+        bodies.remove(body);
+        body.destroy();
+    });
+
+    toChange.toCreate.forEach((body) => {
+        circle = game.add.graphics(0, 0);
+        deployCircle(body.x, body.y, body.radius, { velocity: body.velocity });
+    });
+}
+
+function detectOutOfBounds() {
+    const toDestroy = [];
+
+    bodies.forEach((body) => {
+        const outOfBounds = body.x + body.radius < 0 ||
+            body.x - body.radius > bounds.x ||
+            body.y + body.radius < 0 ||
+            body.y - body.radius > bounds.y;
+
+        if (outOfBounds) {
+            toDestroy.push(body);
+        }
+    });
+
+    return toDestroy;
 }
 
 function detectCollisions() {
@@ -67,14 +107,10 @@ function detectCollisions() {
         }
     }
 
-    toDestroy.forEach((body) => {
-        bodies.remove(body);
-    });
-
-    toCreate.forEach((body) => {
-        circle = game.add.graphics(0, 0);
-        deployCircle(body.x, body.y, body.radius, { velocity: body.velocity });
-    });
+    return {
+        toDestroy,
+        toCreate
+    };
 }
 
 function calculateVelocities() {
@@ -96,7 +132,7 @@ function calculateVelocities() {
     }, this, true);
 }
 
-function createBody() {
+function detectOnClick() {
     if (game.input.mousePointer.isDown) {
         drawCircle();
 

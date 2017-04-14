@@ -10,7 +10,6 @@ Note this is WIP and basically does nothing interesting at the moment.
 
 ## Future plans
 - Make it work
-  - Destroy bodies when leaving bounds
   - Trails
   - Starting velocities
 - Time control
