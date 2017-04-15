@@ -11,6 +11,5 @@ Note this is WIP and basically does nothing interesting at the moment.
 ## Future plans
 - Make it work
   - Trails
-  - Starting velocities
 - Time control
 - Maybe have some precreated models of known solar systems
