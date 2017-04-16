@@ -4,6 +4,8 @@
 
 const physics = require('../../../public/js/physics');
 
+const G = 5;
+
 describe('Calculating force', function () {
     const cases = [
         {
@@ -18,7 +20,7 @@ describe('Calculating force', function () {
                 y: 0,
                 radius: 7
             },
-            expected: 0.5373451285037539
+            expected: 53.734512850375395 * G
         }, {
             it: 'calculates correctly between vertically displaced bodies',
             bodyA: {
@@ -31,7 +33,7 @@ describe('Calculating force', function () {
                 y: -13,
                 radius: 7
             },
-            expected: 0.9793114966980915
+            expected: 97.93114966980914 * G
         }, {
             it: 'calculates correct between diagonally displaced bodies',
             bodyA: {
@@ -44,7 +46,7 @@ describe('Calculating force', function () {
                 y: -13,
                 radius: 7
             },
-            expected: 0.7834491973584732
+            expected: 78.34491973584731 * G
         }
     ];
 

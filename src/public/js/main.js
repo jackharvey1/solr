@@ -127,15 +127,15 @@ function calculateVelocities() {
         const mass = maths.areaOfCircle(influencedBody.radius);
         bodies.forEach((influencingBody) => {
             if (influencedBody !== influencingBody) {
-                const force = physics.calculateForceBetween(influencedBody, influencingBody) / mass;
+                const force = physics.calculateForceBetween(influencedBody, influencingBody);
 
                 const xDistance = influencingBody.x - influencedBody.x;
                 const yDistance = influencingBody.y - influencedBody.y;
-                const xWeighting = xDistance / Math.abs(xDistance + yDistance);
-                const yWeighting = yDistance / Math.abs(xDistance + yDistance);
+                const xWeighting = xDistance / (Math.abs(xDistance) + Math.abs(yDistance));
+                const yWeighting = yDistance / (Math.abs(xDistance) + Math.abs(yDistance));
 
-                influencedBody.body.velocity.x += xWeighting * force;
-                influencedBody.body.velocity.y += yWeighting * force;
+                influencedBody.body.velocity.x += (xWeighting * force) / mass;
+                influencedBody.body.velocity.y += (yWeighting * force) / mass;
             }
         }, this, true);
     }, this, true);
