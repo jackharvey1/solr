@@ -9,7 +9,5 @@ Note this is WIP and basically does nothing interesting at the moment.
 - When a body is destroyed whilst drawing a new one, the position of the drawing bugs out
 
 ## Future plans
-- Make it work
-  - Trails
 - Time control
 - Maybe have some precreated models of known solar systems

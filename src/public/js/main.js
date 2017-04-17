@@ -35,9 +35,7 @@ const circleColour = 0xD0CECE;
 let inCreation = false;
 let circle;
 let bodies;
-
 let line;
-
 
 function preload() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -52,11 +50,13 @@ function create() {
 
 function update() {
     detectOnClick();
-    calculateVelocities();
     updateSystem();
+    drawTrails();
 }
 
 function updateSystem() {
+    calculateVelocities();
+
     const toChange = detectCollisions();
     toChange.toDestroy.concat(detectOutOfBounds());
 
@@ -68,6 +68,18 @@ function updateSystem() {
     toChange.toCreate.forEach((body) => {
         circle = game.add.graphics(0, 0);
         deployCircle(body.x, body.y, body.radius, { velocity: body.velocity });
+    });
+}
+
+function drawTrails() {
+    bodies.forEach((body) => {
+        for (let i = 0; i < body.trails.length - 1; i++) {
+            body.trails[i].alpha -= 0.005;
+        }
+
+        body.trails[body.trails.length - 1].lineTo(body.x, body.y);
+
+        extendTrail(body);
     });
 }
 
@@ -218,7 +230,10 @@ function deployCircle(posX, posY, radius, extras) {
 
     const circleSprite = game.add.sprite(posX, posY);
     circleSprite.addChild(circle);
+
     circleSprite.radius = radius;
+    circleSprite.trails = [];
+    extendTrail(circleSprite);
 
     game.physics.arcade.enable(circleSprite, false);
     circleSprite.body.collideWorldBounds = false;
@@ -229,4 +244,12 @@ function deployCircle(posX, posY, radius, extras) {
     }
 
     bodies.add(circleSprite);
+}
+
+function extendTrail(body) {
+    const trailCount = body.trails.length;
+    body.trails[trailCount] = game.add.graphics(0, 0);
+    body.trails[trailCount].beginFill(circleColour, 0.75);
+    body.trails[trailCount].lineStyle(3, circleColour, 0.75);
+    body.trails[trailCount].moveTo(body.x, body.y);
 }
