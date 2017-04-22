@@ -61,6 +61,9 @@ function updateSystem() {
     toChange.toDestroy.concat(detectOutOfBounds());
 
     toChange.toDestroy.forEach((body) => {
+        body.trails.forEach((trail) => {
+            trail.clear();
+        });
         bodies.remove(body);
         body.destroy();
     });
