@@ -2,7 +2,9 @@
 
 Just `git clone`, `nvm use`, `npm i`, and then `gulp`.
 
-Note this is WIP and basically does nothing interesting at the moment.
+## How to play
+
+Click and draw creates a circle/planet/body. When you release you can see the starting velocity using the line. Click to release the body and watch it go. 
 
 ## Known Bugs
 - When a body is destroyed whilst drawing a new one, the position of the drawing bugs out
