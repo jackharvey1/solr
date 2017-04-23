@@ -10,10 +10,10 @@ const maths = require('./maths');
 const physics = require('./physics');
 
 const bounds = {
-    x: window.innerWidth,
-    y: window.innerHeight
+    width: window.innerWidth,
+    height: window.innerHeight
 };
-const game = new Phaser.Game(bounds.x, bounds.y, Phaser.AUTO, '', {
+const game = new Phaser.Game(bounds.width, bounds.height, Phaser.AUTO, '', {
     preload,
     create,
     update
@@ -32,6 +32,8 @@ const clickState = {
     }
 };
 const circleColour = 0xD0CECE;
+const boundsMultiplier = 10;
+let cursors;
 let inCreation = false;
 let circle;
 let bodies;
@@ -39,10 +41,16 @@ let line;
 
 function preload() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
-    window.bodies = bodies = game.add.group();
+    bodies = game.add.group();
+
+    cursors = game.input.keyboard.createCursorKeys();
 }
 
 function create() {
+    game.world.setBounds(bounds.width * (boundsMultiplier * -0.5), bounds.height * (boundsMultiplier * -0.5), bounds.width * boundsMultiplier, bounds.height * boundsMultiplier);
+    game.camera.x = bounds.width * -0.5;
+    game.camera.y = bounds.width * -0.5;
+
     line = game.add.graphics(0, 0);
     line.beginFill(circleColour, 0.75);
     line.lineStyle(3, circleColour, 0.75);
@@ -50,6 +58,7 @@ function create() {
 
 function update() {
     detectOnClick();
+    detectCursorKeys();
     updateSystem();
     drawTrails();
 }
@@ -91,9 +100,9 @@ function detectOutOfBounds() {
 
     bodies.forEach((body) => {
         const outOfBounds = body.x + body.radius < 0 ||
-            body.x - body.radius > bounds.x ||
+            body.x - body.radius > bounds.width ||
             body.y + body.radius < 0 ||
-            body.y - body.radius > bounds.y;
+            body.y - body.radius > bounds.height;
 
         if (outOfBounds) {
             toDestroy.push(body);
@@ -156,6 +165,20 @@ function calculateVelocities() {
     }, this, true);
 }
 
+function detectCursorKeys() {
+    if (cursors.up.isDown) {
+        game.camera.y -= 4;
+    } else if (cursors.down.isDown) {
+        game.camera.y += 4;
+    }
+
+    if (cursors.left.isDown) {
+        game.camera.x -= 4;
+    } else if (cursors.right.isDown) {
+        game.camera.x += 4;
+    }
+}
+
 function detectOnClick() {
     if (game.input.mousePointer.isDown && !game.input.mousePointer.justPressed()) {
         drawCircle();
@@ -167,8 +190,8 @@ function detectOnClick() {
 }
 
 function setStartingVelocity() {
-    clickState.newX = game.input.x;
-    clickState.newY = game.input.y;
+    clickState.newX = game.input.mousePointer.worldX;
+    clickState.newY = game.input.mousePointer.worldY;
 
     if (clickState.hasChanged()) {
         line.clear();
@@ -177,7 +200,7 @@ function setStartingVelocity() {
     }
 
     line.moveTo(clickState.originalX, clickState.originalY);
-    line.lineTo(game.input.x, game.input.y);
+    line.lineTo(game.input.mousePointer.worldX, game.input.mousePointer.worldY);
 
     if (game.input.mousePointer.isDown) {
         const velocity = {};
@@ -204,14 +227,14 @@ function setStartingVelocity() {
 
 function drawCircle() {
     if (!inCreation) {
-        clickState.originalX = game.input.x;
-        clickState.originalY = game.input.y;
+        clickState.originalX = game.input.mousePointer.worldX;
+        clickState.originalY = game.input.mousePointer.worldY;
 
         circle = game.add.graphics(0, 0);
         circle.beginFill(circleColour, 1);
     }
 
-    const currentDragDistance = maths.pythagorasFromPoints(clickState.originalX, clickState.originalY, game.input.x, game.input.y);
+    const currentDragDistance = maths.pythagorasFromPoints(clickState.originalX, clickState.originalY, game.input.mousePointer.worldX, game.input.mousePointer.worldY);
 
     if (currentDragDistance <= 150) {
         if (currentDragDistance < clickState.dragDistance()) {
@@ -220,8 +243,8 @@ function drawCircle() {
         }
         circle.drawCircle(clickState.originalX, clickState.originalY, currentDragDistance);
 
-        clickState.newX = game.input.x;
-        clickState.newY = game.input.y;
+        clickState.newX = game.input.mousePointer.worldX;
+        clickState.newY = game.input.mousePointer.worldY;
         clickState.radius = currentDragDistance;
     }
 }
