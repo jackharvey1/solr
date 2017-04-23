@@ -10,8 +10,8 @@ const maths = require('./maths');
 const physics = require('./physics');
 
 const bounds = {
-    x: window.outerWidth,
-    y: window.outerHeight
+    x: window.innerWidth,
+    y: window.innerHeight
 };
 const game = new Phaser.Game(bounds.x, bounds.y, Phaser.AUTO, '', {
     preload,
