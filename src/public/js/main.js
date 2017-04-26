@@ -24,6 +24,9 @@ const circle = require('./circle');
 const boundsMultiplier = 10;
 let cursors;
 
+let xStep = 4,
+    yStep = 4;
+
 function preload() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -152,16 +155,27 @@ function calculateVelocities() {
 }
 
 function detectCursorKeys() {
-    if (cursors.up.isDown) {
-        game.camera.y -= 4;
-    } else if (cursors.down.isDown) {
-        game.camera.y += 4;
+    if (cursors.left.isDown || cursors.right.isDown) {
+        xStep += 1;
+        if (cursors.left.isDown) {
+            game.camera.x -= xStep;
+        } else if (cursors.right.isDown) {
+            game.camera.x += xStep;
+        }
     }
 
-    if (cursors.left.isDown) {
-        game.camera.x -= 4;
-    } else if (cursors.right.isDown) {
-        game.camera.x += 4;
+    if (cursors.down.isDown || cursors.up.isDown) {
+        yStep += 1;
+        if (cursors.up.isDown) {
+            game.camera.y -= yStep;
+        } else if (cursors.down.isDown) {
+            game.camera.y += yStep;
+        }
+    }
+
+    if (cursors.up.isUp && cursors.right.isUp && cursors.down.isUp && cursors.left.isUp) {
+        xStep = 4;
+        yStep = 4;
     }
 }
 
