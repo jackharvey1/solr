@@ -74,9 +74,15 @@ function updateSystem() {
 
 function drawTrails() {
     circle.group.forEach((body) => {
-        for (let i = 0; i < body.trails.length - 1; i++) {
+        let lastLivingIndex = 0;
+        for (let i = body.trails.length - 1; i > 0; i--) {
+            if (body.trails[i].alpha <= 0.005) {
+                lastLivingIndex = i;
+            }
             body.trails[i].alpha -= 0.005;
         }
+
+        body.trails.splice(0, lastLivingIndex - 1);
 
         body.trails[body.trails.length - 1].lineTo(body.x, body.y);
 
