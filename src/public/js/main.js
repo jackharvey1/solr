@@ -179,8 +179,10 @@ function detectCursorKeys() {
         }
     }
 
-    if (cursors.up.isUp && cursors.right.isUp && cursors.down.isUp && cursors.left.isUp) {
+    if (cursors.left.isUp && cursors.right.isUp) {
         xStep = 4;
+    }
+    if (cursors.up.isUp && cursors.down.isUp) {
         yStep = 4;
     }
 }
