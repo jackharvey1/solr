@@ -114,7 +114,7 @@ function remove(body) {
 }
 
 function calculateGravitation(body, otherBody) {
-    const mass = maths.areaOfCircle(body.radius);
+    const mass = maths.calculateMass(body.radius);
     const force = physics.calculateForceBetween(body, otherBody);
 
     const xDistance = otherBody.x - body.x;

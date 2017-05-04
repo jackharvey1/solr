@@ -2,11 +2,11 @@
 
 const maths = require('./maths');
 
-const gravitationalConstant = 25;
+const gravitationalConstant = 0.3;
 
 function calculateForceBetween(bodyA, bodyB) {
-    const massOfBodyA = maths.areaOfCircle(bodyA.radius);
-    const massOfBodyB = maths.areaOfCircle(bodyB.radius);
+    const massOfBodyA = maths.calculateMass(bodyA.radius);
+    const massOfBodyB = maths.calculateMass(bodyB.radius);
     const distance = maths.pythagorasFromPoints(bodyA.x, bodyA.y, bodyB.x, bodyB.y);
 
     const force = gravitationalConstant * ((massOfBodyA * massOfBodyB) / Math.pow(distance, 2));
@@ -15,8 +15,8 @@ function calculateForceBetween(bodyA, bodyB) {
 }
 
 function calculateResultantVelocity(bodyA, bodyB) {
-    const bodyToCheckMass = maths.areaOfCircle(bodyA.radius);
-    const otherBodyMass = maths.areaOfCircle(bodyB.radius);
+    const bodyToCheckMass = maths.calculateMass(bodyA.radius);
+    const otherBodyMass = maths.calculateMass(bodyB.radius);
     const combinedMass = bodyToCheckMass + otherBodyMass;
     const bodyToCheckWeighting = bodyToCheckMass / combinedMass;
     const otherBodyWeighting = otherBodyMass / combinedMass;
