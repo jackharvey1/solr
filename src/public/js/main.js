@@ -6,12 +6,23 @@
 * Don't pollute global namespace
 */
 
-const bounds = {
-    width: window.innerWidth,
-    height: window.innerHeight
+const boundsMultiplier = 10;
+const dimensions = {
+    screen: {
+        width: window.innerWidth,
+        height: window.innerHeight
+    },
+    origin: {
+        x: window.innerWidth * (boundsMultiplier * -0.5),
+        y: window.innerHeight * (boundsMultiplier * -0.5)
+    },
+    world: {
+        width: window.innerWidth * boundsMultiplier,
+        height: window.innerHeight * boundsMultiplier
+    }
 };
 
-const game = module.exports = new Phaser.Game(bounds.width, bounds.height, Phaser.AUTO, '', {
+const game = module.exports = new Phaser.Game(dimensions.screen.width, dimensions.screen.height, Phaser.AUTO, '', {
     preload,
     create,
     update
@@ -20,8 +31,8 @@ const game = module.exports = new Phaser.Game(bounds.width, bounds.height, Phase
 const maths = require('./maths');
 const physics = require('./physics');
 const circle = require('./circle');
+const trails = require('./trails');
 
-const boundsMultiplier = 10;
 let cursors;
 
 let xStep = 4,
@@ -37,127 +48,82 @@ function create() {
     circle.init();
 
     game.world.setBounds(
-        bounds.width * (boundsMultiplier * -0.5),
-        bounds.height * (boundsMultiplier * -0.5),
-        bounds.width * boundsMultiplier,
-        bounds.height * boundsMultiplier
+        dimensions.origin.x,
+        dimensions.origin.y,
+        dimensions.world.width,
+        dimensions.world.height
     );
-    game.camera.x = bounds.width * -0.5;
-    game.camera.y = bounds.width * -0.5;
+    game.camera.x = dimensions.screen.width * -0.5;
+    game.camera.y = dimensions.screen.height * -0.5;
 }
 
 function update() {
     detectOnClick();
     detectCursorKeys();
     updateSystem();
-    drawTrails();
+}
+
+function detectOutOfBounds(body) {
+    const isOutOfBounds = body.x + body.radius < dimensions.origin.x ||
+        body.x - body.radius > dimensions.world.width ||
+        body.y + body.radius < dimensions.origin.y ||
+        body.y - body.radius > dimensions.world.height;
+
+    return isOutOfBounds;
 }
 
 function updateSystem() {
-    calculateVelocities();
-
-    const toChange = detectCollisions();
-    toChange.toDestroy.concat(detectOutOfBounds());
-
-    toChange.toDestroy.forEach((body) => {
-        body.trails.forEach((trail) => {
-            trail.clear();
-        });
-        circle.group.remove(body);
-        body.destroy();
-    });
-
-    toChange.toCreate.forEach((body) => {
-        circle.deploy(body.x, body.y, body.radius, { velocity: body.velocity });
-    });
-}
-
-function drawTrails() {
-    circle.group.forEach((body) => {
-        let lastLivingIndex = 0;
-        for (let i = body.trails.length - 1; i > 0; i--) {
-            if (body.trails[i].alpha <= 0.005) {
-                lastLivingIndex = i;
-            }
-            body.trails[i].alpha -= 0.005;
-        }
-
-        body.trails.splice(0, lastLivingIndex - 1);
-
-        body.trails[body.trails.length - 1].lineTo(body.x, body.y);
-
-        body.extendTrail();
-    });
-}
-
-function detectOutOfBounds() {
-    const toDestroy = [];
-
-    circle.group.forEach((body) => {
-        const outOfBounds = body.x + body.radius < 0 ||
-            body.x - body.radius > bounds.width ||
-            body.y + body.radius < 0 ||
-            body.y - body.radius > bounds.height;
-
-        if (outOfBounds) {
-            toDestroy.push(body);
-        }
-    });
-
-    return toDestroy;
-}
-
-function detectCollisions() {
-    const toCreate = [];
-    const toDestroy = [];
-
-    for (let i = 0, l = circle.group.children.length; i < l; i++) {
+    for (let i = 0; i < circle.group.children.length; i++) {
         const bodyToCheck = circle.group.children[i];
-        for (let j = i + 1; j < l; j++) {
-            const otherBody = circle.group.children[j];
-            const distance = maths.pythagorasFromPoints(bodyToCheck.x, bodyToCheck.y, otherBody.x, otherBody.y);
-            if (distance <= bodyToCheck.radius + otherBody.radius) {
-                const bodyToLive = bodyToCheck.radius < otherBody.radius ? otherBody : bodyToCheck;
-                const newRadius = maths.radiusOfCombinedArea(bodyToCheck.radius, otherBody.radius);
 
-                const newVelocity = physics.calculateResultantVelocity(bodyToCheck, otherBody);
-
-                toCreate.push({
-                    x: bodyToLive.x,
-                    y: bodyToLive.y,
-                    radius: newRadius,
-                    velocity: newVelocity
-                });
-
-                toDestroy.push(bodyToCheck);
-                toDestroy.push(otherBody);
+        if (detectOutOfBounds(bodyToCheck)) {
+            remove(bodyToCheck);
+        } else {
+            trails.draw(bodyToCheck);
+            for (let j = 0; j < circle.group.children.length; j++) {
+                if (i !== j) {
+                    const otherBody = circle.group.children[j];
+                    detectCollision(bodyToCheck, otherBody, i);
+                    calculateGravitation(bodyToCheck, otherBody);
+                }
             }
         }
     }
-
-    return {
-        toDestroy,
-        toCreate
-    };
 }
 
-function calculateVelocities() {
-    circle.group.forEach((influencedBody) => {
-        const mass = maths.areaOfCircle(influencedBody.radius);
-        circle.group.forEach((influencingBody) => {
-            if (influencedBody !== influencingBody) {
-                const force = physics.calculateForceBetween(influencedBody, influencingBody);
+function detectCollision(body, otherBody) {
+    const distance = maths.pythagorasFromPoints(body.x, body.y, otherBody.x, otherBody.y);
+    if (distance <= body.radius + otherBody.radius) {
+        const bodyToLive = body.radius < otherBody.radius ? otherBody : body;
+        const newRadius = maths.radiusOfCombinedArea(body.radius, otherBody.radius);
 
-                const xDistance = influencingBody.x - influencedBody.x;
-                const yDistance = influencingBody.y - influencedBody.y;
-                const xWeighting = xDistance / (Math.abs(xDistance) + Math.abs(yDistance));
-                const yWeighting = yDistance / (Math.abs(xDistance) + Math.abs(yDistance));
+        const newVelocity = physics.calculateResultantVelocity(body, otherBody);
 
-                influencedBody.body.velocity.x += (xWeighting * force) / mass;
-                influencedBody.body.velocity.y += (yWeighting * force) / mass;
-            }
-        }, this, true);
-    }, this, true);
+        circle.deploy(bodyToLive.x, bodyToLive.y, newRadius, { velocity: newVelocity });
+        remove(body);
+        remove(otherBody);
+    }
+}
+
+function remove(body) {
+    body.trails.forEach((trail) => {
+        trail.clear();
+    });
+    circle.group.remove(body);
+    body.destroy();
+}
+
+function calculateGravitation(body, otherBody) {
+    const mass = maths.areaOfCircle(body.radius);
+    const force = physics.calculateForceBetween(body, otherBody);
+
+    const xDistance = otherBody.x - body.x;
+    const yDistance = otherBody.y - body.y;
+    const xWeighting = xDistance / (Math.abs(xDistance) + Math.abs(yDistance));
+    const yWeighting = yDistance / (Math.abs(xDistance) + Math.abs(yDistance));
+
+    body.body.velocity.x += (xWeighting * force) / mass;
+    body.body.velocity.y += (yWeighting * force) / mass;
 }
 
 function detectCursorKeys() {

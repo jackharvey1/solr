@@ -2,7 +2,7 @@
 
 const maths = require('./maths');
 
-const gravitationalConstant = 8;
+const gravitationalConstant = 25;
 
 function calculateForceBetween(bodyA, bodyB) {
     const massOfBodyA = maths.areaOfCircle(bodyA.radius);

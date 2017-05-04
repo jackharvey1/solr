@@ -1,9 +1,8 @@
-/* global Phaser */
-
 'use strict';
 
 const game = require('./main');
 const maths = require('./maths');
+const trails = require('./trails');
 
 const clickState = {
     originalX: 0,
@@ -71,7 +70,7 @@ function deploy(posX, posY, radius, extras) {
 
     circleSprite.radius = radius;
     circleSprite.trails = [];
-    circleSprite.extendTrail();
+    trails.extend(circleSprite);
 
     game.physics.arcade.enable(circleSprite, false);
     circleSprite.body.collideWorldBounds = false;
@@ -95,7 +94,7 @@ function setStartingVelocity() {
     }
 
     line.moveTo(clickState.originalX, clickState.originalY);
-    line.lineTo(game.input.mousePointer.worldX, game.input.mousePointer.worldY);
+    line.lineTo(clickState.newX, clickState.newY);
 
     if (game.input.mousePointer.isDown) {
         const velocity = {};
@@ -119,14 +118,6 @@ function setStartingVelocity() {
         inCreation = false;
     }
 }
-
-Phaser.Sprite.prototype.extendTrail = function () {
-    const trailCount = this.trails.length;
-    this.trails[trailCount] = game.add.graphics(0, 0);
-    this.trails[trailCount].beginFill(circleColour, 0.75);
-    this.trails[trailCount].lineStyle(3, circleColour, 0.75);
-    this.trails[trailCount].moveTo(this.x, this.y);
-};
 
 module.exports = {
     init,
