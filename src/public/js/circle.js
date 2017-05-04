@@ -99,7 +99,7 @@ function setStartingVelocity() {
     if (game.input.mousePointer.isDown) {
         const velocity = {};
 
-        if (maths.pythagorasFromPoints(clickState.originalX, clickState.originalY, clickState.newX, clickState.newY) < clickState.radius) {
+        if (clickState.dragDistance() < clickState.radius) {
             velocity.x = 0;
             velocity.y = 0;
         } else {

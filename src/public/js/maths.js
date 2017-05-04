@@ -8,10 +8,6 @@ function pythagorasFromPoints(fromX, fromY, toX, toY) {
     return Math.sqrt(xSquared + ySquared);
 }
 
-function calculateMass(radius) {
-    return (4 / 3) * Math.PI * Math.pow(radius, 3);
-}
-
 function areaOfCircle(radius) {
     return Math.PI * Math.pow(radius, 2);
 }
@@ -26,7 +22,6 @@ function radiusOfCombinedArea(radius1, radius2) {
 
 module.exports = {
     pythagorasFromPoints,
-    calculateMass,
     radiusFromArea,
     radiusOfCombinedArea
 };

@@ -29,23 +29,18 @@ const game = module.exports = new Phaser.Game(dimensions.screen.width, dimension
 });
 
 const maths = require('./maths');
-const physics = require('./physics');
+const calculate = require('./calculate');
 const circle = require('./circle');
 const trails = require('./trails');
-
-let cursors;
-
-let xStep = 4,
-    yStep = 4;
+const input = require('./input');
 
 function preload() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
-
-    cursors = game.input.keyboard.createCursorKeys();
 }
 
 function create() {
     circle.init();
+    input.init();
 
     game.world.setBounds(
         dimensions.origin.x,
@@ -58,18 +53,8 @@ function create() {
 }
 
 function update() {
-    detectOnClick();
-    detectCursorKeys();
+    input.detect();
     updateSystem();
-}
-
-function detectOutOfBounds(body) {
-    const isOutOfBounds = body.x + body.radius < dimensions.origin.x ||
-        body.x - body.radius > dimensions.world.width ||
-        body.y + body.radius < dimensions.origin.y ||
-        body.y - body.radius > dimensions.world.height;
-
-    return isOutOfBounds;
 }
 
 function updateSystem() {
@@ -84,11 +69,20 @@ function updateSystem() {
                 if (i !== j) {
                     const otherBody = circle.group.children[j];
                     detectCollision(bodyToCheck, otherBody, i);
-                    calculateGravitation(bodyToCheck, otherBody);
+                    calculate.gravitation(bodyToCheck, otherBody);
                 }
             }
         }
     }
+}
+
+function detectOutOfBounds(body) {
+    const isOutOfBounds = body.x + body.radius < dimensions.origin.x ||
+    body.x - body.radius > dimensions.world.width ||
+    body.y + body.radius < dimensions.origin.y ||
+    body.y - body.radius > dimensions.world.height;
+
+    return isOutOfBounds;
 }
 
 function detectCollision(body, otherBody) {
@@ -97,7 +91,7 @@ function detectCollision(body, otherBody) {
         const bodyToLive = body.radius < otherBody.radius ? otherBody : body;
         const newRadius = maths.radiusOfCombinedArea(body.radius, otherBody.radius);
 
-        const newVelocity = physics.calculateResultantVelocity(body, otherBody);
+        const newVelocity = calculate.resultantVelocity(body, otherBody);
 
         circle.deploy(bodyToLive.x, bodyToLive.y, newRadius, { velocity: newVelocity });
         remove(body);
@@ -111,52 +105,4 @@ function remove(body) {
     });
     circle.group.remove(body);
     body.destroy();
-}
-
-function calculateGravitation(body, otherBody) {
-    const mass = maths.calculateMass(body.radius);
-    const force = physics.calculateForceBetween(body, otherBody);
-
-    const xDistance = otherBody.x - body.x;
-    const yDistance = otherBody.y - body.y;
-    const xWeighting = xDistance / (Math.abs(xDistance) + Math.abs(yDistance));
-    const yWeighting = yDistance / (Math.abs(xDistance) + Math.abs(yDistance));
-
-    body.body.velocity.x += (xWeighting * force) / mass;
-    body.body.velocity.y += (yWeighting * force) / mass;
-}
-
-function detectCursorKeys() {
-    if (cursors.left.isDown || cursors.right.isDown) {
-        xStep += 1;
-        if (cursors.left.isDown) {
-            game.camera.x -= xStep;
-        } else if (cursors.right.isDown) {
-            game.camera.x += xStep;
-        }
-    }
-
-    if (cursors.down.isDown || cursors.up.isDown) {
-        yStep += 1;
-        if (cursors.up.isDown) {
-            game.camera.y -= yStep;
-        } else if (cursors.down.isDown) {
-            game.camera.y += yStep;
-        }
-    }
-
-    if (cursors.left.isUp && cursors.right.isUp) {
-        xStep = 4;
-    }
-    if (cursors.up.isUp && cursors.down.isUp) {
-        yStep = 4;
-    }
-}
-
-function detectOnClick() {
-    if (game.input.mousePointer.isDown && !game.input.mousePointer.justPressed()) {
-        circle.draw();
-    } else if (circle.inCreation) {
-        circle.setStartingVelocity();
-    }
 }
