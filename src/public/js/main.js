@@ -68,8 +68,8 @@ function updateSystem() {
             for (let j = 0; j < circle.group.children.length; j++) {
                 if (i !== j) {
                     const otherBody = circle.group.children[j];
-                    detectCollision(bodyToCheck, otherBody, i);
                     calculate.gravitation(bodyToCheck, otherBody);
+                    detectCollision(bodyToCheck, otherBody, i);
                 }
             }
         }

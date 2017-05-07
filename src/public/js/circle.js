@@ -2,7 +2,6 @@
 
 const game = require('./main');
 const maths = require('./maths');
-const trails = require('./trails');
 
 const clickState = {
     originalX: 0,
@@ -20,6 +19,7 @@ const clickState = {
 
 let circle;
 const circleColour = 0xD0CECE;
+const maxRadius = 75;
 let inCreation = false;
 let bodies;
 let line;
@@ -41,36 +41,37 @@ function draw() {
         circle.beginFill(circleColour, 1);
     }
 
-    const currentDragDistance = maths.pythagorasFromPoints(clickState.originalX, clickState.originalY, game.input.mousePointer.worldX, game.input.mousePointer.worldY);
+    const radiusDrawn = maths.pythagorasFromPoints(clickState.originalX, clickState.originalY, game.input.mousePointer.worldX, game.input.mousePointer.worldY);
 
-    if (currentDragDistance <= 150) {
-        if (currentDragDistance < clickState.dragDistance()) {
+    if (radiusDrawn <= maxRadius) {
+        if (radiusDrawn < clickState.dragDistance()) {
             circle.clear();
             circle.beginFill(circleColour, 1);
         }
-        circle.drawCircle(clickState.originalX, clickState.originalY, currentDragDistance);
+        circle.drawCircle(clickState.originalX, clickState.originalY, radiusDrawn * 2);
 
         clickState.newX = game.input.mousePointer.worldX;
         clickState.newY = game.input.mousePointer.worldY;
-        clickState.radius = currentDragDistance;
+        clickState.radius = radiusDrawn;
     }
 
     inCreation = true;
 }
 
 function deploy(posX, posY, radius, extras) {
-    circle.clear();
+    if (circle) {
+        circle.clear();
+    }
 
     circle = game.add.graphics(0, 0);
     circle.beginFill(circleColour, 1);
-    circle.drawCircle(0, 0, radius);
+    circle.drawCircle(0, 0, radius * 2);
 
     const circleSprite = game.add.sprite(posX, posY);
     circleSprite.addChild(circle);
 
     circleSprite.radius = radius;
     circleSprite.trails = [];
-    trails.extend(circleSprite);
 
     game.physics.arcade.enable(circleSprite, false);
     circleSprite.body.collideWorldBounds = false;

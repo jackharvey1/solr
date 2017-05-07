@@ -9,7 +9,6 @@ const trail = {
 
 function draw(body) {
     fade(body);
-    body.trails[body.trails.length - 1].lineTo(body.x, body.y);
     extend(body);
 }
 
@@ -17,19 +16,18 @@ function extend(body) {
     const trailCount = body.trails.length;
     body.trails[trailCount] = game.add.graphics(0, 0);
     body.trails[trailCount].beginFill(trail.colour, trail.opacity);
-    body.trails[trailCount].lineStyle(trail.width, trail.colour, trail.opacity);
-    body.trails[trailCount].moveTo(body.x, body.y);
+    body.trails[trailCount].drawCircle(body.x, body.y, 3);
 }
 
 function fade(body) {
     let lastLivingIndex = 0;
-    for (let j = body.trails.length - 1; j > 0; j--) {
+    for (let j = 0; j < body.trails.length - 1; j++) {
         if (body.trails[j].alpha <= 0.005) {
             lastLivingIndex = j;
         }
         body.trails[j].alpha -= 0.005;
     }
-    body.trails.splice(0, lastLivingIndex - 1);
+    body.trails.splice(0, lastLivingIndex);
 }
 
 module.exports = {
