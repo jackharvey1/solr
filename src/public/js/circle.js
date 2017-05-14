@@ -14,7 +14,9 @@ const clickState = {
     },
     hasChanged: function () {
         return this.originalX !== this.newX || this.originalY !== this.newY;
-    }
+    },
+    getX: () => game.input.mousePointer.worldX / game.camera.scale.x,
+    getY: () => game.input.mousePointer.worldY / game.camera.scale.y
 };
 
 let circle;
@@ -34,14 +36,14 @@ function init() {
 
 function draw() {
     if (!inCreation) {
-        clickState.originalX = game.input.mousePointer.worldX;
-        clickState.originalY = game.input.mousePointer.worldY;
+        clickState.originalX = clickState.getX();
+        clickState.originalY = clickState.getY();
 
         circle = game.add.graphics(0, 0);
         circle.beginFill(circleColour, 1);
     }
 
-    const radiusDrawn = maths.pythagorasFromPoints(clickState.originalX, clickState.originalY, game.input.mousePointer.worldX, game.input.mousePointer.worldY);
+    const radiusDrawn = maths.pythagorasFromPoints(clickState.originalX, clickState.originalY, clickState.getX(), clickState.getY());
 
     if (radiusDrawn <= maxRadius) {
         if (radiusDrawn < clickState.dragDistance()) {
@@ -50,8 +52,8 @@ function draw() {
         }
         circle.drawCircle(clickState.originalX, clickState.originalY, radiusDrawn * 2);
 
-        clickState.newX = game.input.mousePointer.worldX;
-        clickState.newY = game.input.mousePointer.worldY;
+        clickState.newX = clickState.getX();
+        clickState.newY = clickState.getY();
         clickState.radius = radiusDrawn;
     }
 
@@ -85,8 +87,8 @@ function deploy(posX, posY, radius, extras) {
 }
 
 function setStartingVelocity() {
-    clickState.newX = game.input.mousePointer.worldX;
-    clickState.newY = game.input.mousePointer.worldY;
+    clickState.newX = clickState.getX();
+    clickState.newY = clickState.getY();
 
     if (clickState.hasChanged()) {
         line.clear();

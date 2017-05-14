@@ -1,9 +1,13 @@
+/* global Phaser */
+
 'use strict';
 
 const game = require('./main');
 const circle = require('./circle');
 
 let cursors;
+let zoomInKey,
+    zoomOutKey;
 
 let xStep = 4,
     yStep = 4;
@@ -11,14 +15,27 @@ let xStep = 4,
 
 function init() {
     cursors = game.input.keyboard.createCursorKeys();
+    zoomInKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
+    zoomOutKey = game.input.keyboard.addKey(Phaser.Keyboard.Z);
 }
 
 function detect() {
-    detectCursorKeys();
+    detectZoomKeys();
+    detectPanKeys();
     detectOnClick();
 }
 
-function detectCursorKeys() {
+function detectZoomKeys() {
+    if (zoomInKey.isDown && game.camera.scale.x < 2) {
+        game.camera.scale.x += 0.005;
+        game.camera.scale.y += 0.005;
+    } else if (zoomOutKey.isDown && game.camera.scale.x > 0.25) {
+        game.camera.scale.x -= 0.005;
+        game.camera.scale.y -= 0.005;
+    }
+}
+
+function detectPanKeys() {
     if (cursors.left.isDown || cursors.right.isDown) {
         xStep += 1;
         if (cursors.left.isDown) {

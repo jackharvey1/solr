@@ -10,7 +10,6 @@ Click and draw creates a circle/planet/body. When you release you can see the st
 - When a body is destroyed whilst drawing a new one, the position of the drawing bugs out
 
 ## Ideas
-- Zoom
 - Right click to follow a body
 - Time control
 - Maybe have some precreated models of known solar systems
