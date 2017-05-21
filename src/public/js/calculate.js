@@ -13,9 +13,7 @@ function forceBetween(bodyA, bodyB) {
     const massOfBodyB = mass(bodyB.radius);
     const distance = maths.pythagorasFromPoints(bodyA.x, bodyA.y, bodyB.x, bodyB.y);
 
-    const force = gravitationalConstant * ((massOfBodyA * massOfBodyB) / Math.pow(distance, 2));
-
-    return force;
+    return gravitationalConstant * ((massOfBodyA * massOfBodyB) / Math.pow(distance, 2));
 }
 
 function resultantVelocity(bodyA, bodyB) {

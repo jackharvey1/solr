@@ -5,15 +5,19 @@
 const game = require('./main');
 const circle = require('./circle');
 
-let cursors;
-let zoomInKey,
+let mouse,
+    camera;
+
+let cursors,
+    zoomInKey,
     zoomOutKey;
 
 let xStep = 4,
     yStep = 4;
 
-
 function init() {
+    mouse = game.input.mousePointer;
+    camera = game.camera;
     cursors = game.input.keyboard.createCursorKeys();
     zoomInKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
     zoomOutKey = game.input.keyboard.addKey(Phaser.Keyboard.Z);
@@ -26,12 +30,12 @@ function detect() {
 }
 
 function detectZoomKeys() {
-    if (zoomInKey.isDown && game.camera.scale.x < 2) {
-        game.camera.scale.x += 0.005;
-        game.camera.scale.y += 0.005;
-    } else if (zoomOutKey.isDown && game.camera.scale.x > 0.25) {
-        game.camera.scale.x -= 0.005;
-        game.camera.scale.y -= 0.005;
+    if (zoomInKey.isDown && camera.scale.x < 2) {
+        camera.scale.x += 0.005;
+        camera.scale.y += 0.005;
+    } else if (zoomOutKey.isDown && camera.scale.x > 0.25) {
+        camera.scale.x -= 0.005;
+        camera.scale.y -= 0.005;
     }
 }
 
@@ -39,18 +43,18 @@ function detectPanKeys() {
     if (cursors.left.isDown || cursors.right.isDown) {
         xStep += 1;
         if (cursors.left.isDown) {
-            game.camera.x -= xStep;
+            camera.x -= xStep;
         } else if (cursors.right.isDown) {
-            game.camera.x += xStep;
+            camera.x += xStep;
         }
     }
 
     if (cursors.down.isDown || cursors.up.isDown) {
         yStep += 1;
         if (cursors.up.isDown) {
-            game.camera.y -= yStep;
+            camera.y -= yStep;
         } else if (cursors.down.isDown) {
-            game.camera.y += yStep;
+            camera.y += yStep;
         }
     }
 
@@ -63,7 +67,7 @@ function detectPanKeys() {
 }
 
 function detectOnClick() {
-    if (game.input.mousePointer.isDown && !game.input.mousePointer.justPressed()) {
+    if (mouse.isDown && !mouse.justPressed()) {
         circle.draw();
     } else if (circle.inCreation) {
         circle.setStartingVelocity();

@@ -78,9 +78,9 @@ function updateSystem() {
 
 function detectOutOfBounds(body) {
     const isOutOfBounds = body.x + body.radius < dimensions.origin.x ||
-    body.x - body.radius > dimensions.world.width ||
-    body.y + body.radius < dimensions.origin.y ||
-    body.y - body.radius > dimensions.world.height;
+        body.x - body.radius > dimensions.world.width ||
+        body.y + body.radius < dimensions.origin.y ||
+        body.y - body.radius > dimensions.world.height;
 
     return isOutOfBounds;
 }
