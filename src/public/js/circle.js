@@ -61,16 +61,17 @@ function draw() {
 }
 
 function deploy(posX, posY, radius, extras) {
-    if (circle) {
+    if (extras.wasDrawn) {
         circle.clear();
     }
 
-    circle = game.add.graphics(0, 0);
-    circle.beginFill(circleColour, 1);
-    circle.drawCircle(0, 0, radius * 2);
+    const deployedCircle = game.add.graphics(0, 0);
+
+    deployedCircle.beginFill(circleColour, 1);
+    deployedCircle.drawCircle(0, 0, radius * 2);
 
     const circleSprite = game.add.sprite(posX, posY);
-    circleSprite.addChild(circle);
+    circleSprite.addChild(deployedCircle);
 
     circleSprite.radius = radius;
     circleSprite.trails = [];
@@ -116,7 +117,10 @@ function setStartingVelocity() {
             velocity.y -= yWeighting * clickState.radius;
         }
 
-        deploy(clickState.originalX, clickState.originalY, clickState.radius, { velocity });
+        deploy(clickState.originalX, clickState.originalY, clickState.radius, {
+            velocity,
+            wasDrawn: true
+        });
         line.clear();
         inCreation = false;
     }
