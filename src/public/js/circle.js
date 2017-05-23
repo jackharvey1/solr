@@ -77,6 +77,7 @@ function deploy(posX, posY, radius, extras) {
     circleSprite.trails = [];
 
     game.physics.arcade.enable(circleSprite, false);
+    circleSprite.body.setCircle(radius);
     circleSprite.body.collideWorldBounds = false;
 
     if (extras) {
@@ -84,7 +85,14 @@ function deploy(posX, posY, radius, extras) {
         circleSprite.body.velocity.y = extras.velocity.y;
     }
 
+    circleSprite.inputEnabled = true;
+    circleSprite.events.onInputDown.add(follow, this);
+
     bodies.add(circleSprite);
+}
+
+function follow(body) {
+    game.camera.follow(body);
 }
 
 function setStartingVelocity() {

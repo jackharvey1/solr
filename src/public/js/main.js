@@ -36,6 +36,9 @@ const input = require('./input');
 
 function preload() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
+    game.canvas.oncontextmenu = (e) => {
+        e.preventDefault();
+    };
 }
 
 function create() {

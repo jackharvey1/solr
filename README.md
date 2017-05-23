@@ -10,6 +10,5 @@ Click and draw creates a circle/planet/body. When you release you can see the st
 None
 
 ## Ideas
-- Right click to follow a body
 - Time control
 - Maybe have some precreated models of known solar systems
