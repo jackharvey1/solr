@@ -92,7 +92,11 @@ function deploy(posX, posY, radius, extras) {
 }
 
 function follow(body) {
-    game.camera.follow(body);
+    if (game.camera.target === body) {
+        game.camera.unfollow();
+    } else {
+        game.camera.follow(body);
+    }
 }
 
 function setStartingVelocity() {
